@@ -1,9 +1,14 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
+
+load_dotenv()
+env_path = Path('.')/'.env'
+load_dotenv(dotenv_path=env_path)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = 'django-insecure-mg$l%g6s4&sk))-ij#=!wb6!qsh%ky#x8r)mj$%vqc(g%38-*x'
+SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = True
 ALLOWED_HOSTS = []
 
@@ -89,3 +94,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+ALGORITHM = os.getenv('ALGORITHM')
+ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES')
+
+
+GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
