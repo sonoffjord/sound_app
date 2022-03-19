@@ -2,8 +2,9 @@ import os
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, viewsets, views, parsers
+from django_filters.rest_framework import DjangoFilterBackend
 
-from base.services import delete_old_file
+from ..base.services import delete_old_file
 
 from . import models, serializer
 from ..base.permissions import IsAuthor
@@ -74,6 +75,7 @@ class TrackView(MixedSerializer, viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
     def perform_destroy(self, instance):
+        delete_old_file(instance.file.path)
         delete_old_file(instance.cover.path)
         instance.delete()
 
@@ -102,9 +104,12 @@ class PlayListView(MixedSerializer, viewsets.ModelViewSet):
 class TracksListView(generics.ListAPIView):
     """ Список всех треков """
 
-    queryset = models.Track.objects.all()
+    queryset = models.Track.objects.filter(album__private=False, private=False)
     serializer_class = serializer.AuthorTrackSerializer
     pagination_class = Pagination
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['title', 'user__displat_name',
+                        'album__name', 'genre__name']
 
 
 class AuthorTracksListView(generics.ListAPIView):
@@ -112,9 +117,36 @@ class AuthorTracksListView(generics.ListAPIView):
 
     serializer_class = serializer.AuthorTrackSerializer
     pagination_class = Pagination
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['title', 'album__name', 'genre__name']
 
     def get_queryset(self):
-        return models.Track.objects.filter(user__id=self.kwargs.get('pk'))
+        return models.Track.objects.filter(
+            user__id=self.kwargs.get('pk'),
+            album__private=False, private=False
+        )
+
+
+class CommentAuthorView(viewsets.ModelViewSet):
+    """ CRUD коментариев автора """
+
+    serializer_class = serializer.CommentAuthorSerializer
+    permission_classes = [IsAuthor]
+
+    def get_queryset(self):
+        return models.Comment.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class CommentView(viewsets.ModelViewSet):
+    """ Коментарии к треку """
+    
+    serializer_class = serializer.CommentSerializer
+
+    def get_queryset(self):
+        return models.Comment.objects.filter(track_id=self.kwargs.get('pk'))
 
 
 class StreamingFileView(views.APIView):

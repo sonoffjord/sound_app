@@ -5,7 +5,8 @@ from src.base.services import (
     validate_size_image,
     get_path_upload_cover_album,
     get_path_upload_track,
-    get_path_upload_cover_playlist
+    get_path_upload_cover_playlist,
+    get_path_upload_cover_track
 )
 from src.oauth.models import AuthUser
 
@@ -67,6 +68,14 @@ class Track(models.Model):
     likes_count = models.PositiveIntegerField(default=0)
     user_of_likes = models.ManyToManyField(
         AuthUser, related_name='likes_of_tracks')
+    private = models.BooleanField(default=False)
+    cover = models.FileField(
+        upload_to=get_path_upload_cover_track,
+        blank=True,
+        null=True,
+        validators=[FileExtensionValidator(
+            allowed_extensions=['jpg']), validate_size_image]
+    )
 
     def __str__(self):
         return f'{self.user} - {self.title}'

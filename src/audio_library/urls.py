@@ -17,6 +17,11 @@ urlpatterns = [
     path('track-list/', views.TracksListView.as_view()),
     path('author-track-list/<int:pk>/', views.TracksListView.as_view()),
     path(
+        'comments/', views.CommentAuthorView.as_view({'get': 'list', 'post': 'create'})),
+    path('comments/<int:pk>/',
+         views.CommentAuthorView.as_view({'put': 'update', 'delete': 'destroy'})),
+    path('comments_by_track/<int:pk>/', views.CommentView.as_view({'get': 'list'})),
+    path(
         'tracks/', views.TrackView.as_view({'get': 'list', 'post': 'create'})),
     path('tracks/<int:pk>/',
          views.TrackView.as_view({'put': 'update', 'delete': 'destroy'})),
